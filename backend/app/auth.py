@@ -32,12 +32,13 @@ def verify_access_token(token: str, settings: Settings) -> Dict[str, Any]:
 
 def set_auth_cookie(response: Response, token: str, settings: Settings) -> None:
     is_secure = settings.environment.lower() in {"production", "staging"}
+    same_site = "none" if is_secure else "lax"
     response.set_cookie(
         key="admin_token",
         value=token,
         httponly=True,
         secure=is_secure,
-        samesite="lax",
+        samesite=same_site,
         max_age=settings.jwt_expiry_hours * 3600,
         path="/",
     )
