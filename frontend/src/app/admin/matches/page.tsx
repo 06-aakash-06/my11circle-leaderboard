@@ -1,24 +1,32 @@
 import Link from "next/link";
-
 import { AdminNav } from "@/components/admin-nav";
 import { MultiplierBadge } from "@/components/multiplier-badge";
 import { PlaceholderPanel } from "@/components/placeholder-panel";
 import { getMatches, getSeasons } from "@/lib/api";
+import { cookies } from "next/headers";
 
 export default async function AdminMatchesPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  const apiOptions = {
+    headers: {
+      Cookie: `admin_token=${token}`,
+    },
+  };
+
   let error = false;
   let noSeason = false;
   let seasonName = "";
   let matches: Awaited<ReturnType<typeof getMatches>> = [];
 
   try {
-    const seasons = await getSeasons();
+    const seasons = await getSeasons(apiOptions);
     const active = seasons.find((season) => season.is_active) ?? seasons[0];
     if (!active) {
       noSeason = true;
     } else {
       seasonName = active.name;
-      matches = await getMatches(active.id);
+      matches = await getMatches(active.id, apiOptions);
     }
   } catch {
     error = true;

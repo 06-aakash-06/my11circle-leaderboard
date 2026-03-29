@@ -2,8 +2,17 @@ import { PlaceholderPanel } from "@/components/placeholder-panel";
 import { getMatches, getSeasonDetail, getSeasons } from "@/lib/api";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin-nav";
+import { cookies } from "next/headers";
 
 export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  const apiOptions = {
+    headers: {
+      Cookie: `admin_token=${token}`,
+    },
+  };
+
   let error = false;
   let noSeason = false;
   let seasonName = "";
@@ -14,12 +23,15 @@ export default async function AdminPage() {
   let pendingMatches: Awaited<ReturnType<typeof getMatches>> = [];
 
   try {
-    const seasons = await getSeasons();
+    const seasons = await getSeasons(apiOptions);
     const active = seasons.find((season) => season.is_active) ?? seasons[0];
     if (!active) {
       noSeason = true;
     } else {
-      const [detail, matches] = await Promise.all([getSeasonDetail(active.id), getMatches(active.id)]);
+      const [detail, matches] = await Promise.all([
+        getSeasonDetail(active.id, apiOptions),
+        getMatches(active.id, apiOptions),
+      ]);
       seasonName = detail.name;
       playerCount = detail.players.length;
       completedCount = matches.filter((match) => match.is_complete).length;

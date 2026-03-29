@@ -31,7 +31,7 @@ def verify_access_token(token: str, settings: Settings) -> Dict[str, Any]:
 
 
 def set_auth_cookie(response: Response, token: str, settings: Settings) -> None:
-    is_secure = settings.environment.lower() in {"production", "staging"}
+    is_secure = settings.environment.lower() != "development"
     same_site = "none" if is_secure else "lax"
     response.set_cookie(
         key="admin_token",
