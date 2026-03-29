@@ -1,14 +1,24 @@
 import { LeaderboardResponse, Match, Season, SeasonDetail } from "@/types/api";
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
+/**
+ * Server-side: use full backend URL (for server components making direct requests).
+ * Client-side: use /api/backend proxy (rewrites forward to Render, cookies stay same-domain).
+ */
+const API_URL_SERVER = (process.env.BACKEND_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
+const API_URL_CLIENT = "/api/backend";
+
+function getApiUrl(): string {
+  return typeof window === "undefined" ? API_URL_SERVER : API_URL_CLIENT;
+}
 
 type FetchOptions = RequestInit & {
   next?: { revalidate?: number };
 };
 
 async function apiFetch<T>(path: string, options?: FetchOptions): Promise<T> {
+  const base = getApiUrl();
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const response = await fetch(`${API_URL}${normalizedPath}`, {
+  const response = await fetch(`${base}${normalizedPath}`, {
     ...options,
     credentials: "include",
     headers: {

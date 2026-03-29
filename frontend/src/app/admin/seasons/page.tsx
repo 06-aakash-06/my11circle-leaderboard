@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AdminNav } from "@/components/admin-nav";
 import { Season } from "@/types/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const API_URL = "/api/backend";
 
 type Status = {
   kind: "success" | "error";
